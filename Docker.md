@@ -56,3 +56,6 @@ Docker是内核级别的虚拟化，可以在一个物理机上运行很多的�
 
 # Docker安装
 
+## Docker的基本组成
+
+![img](https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fcdn.learnku.com%2Fuploads%2Fimages%2F202003%2F18%2F22215%2Fv7N8wg4sy3.png%21large&refer=http%3A%2F%2Fcdn.learnku.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1648907607&t=0f2c40ffec6ff4440163bd7650cff630)
