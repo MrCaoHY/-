@@ -305,3 +305,327 @@ docker kill 容器id #强制停止当前容器
 ## 常用其他命令
 
 **后台启动容器**
+
+```shell
+# 命令 docker run -d 镜像名
+ubuntu@VM-16-8-ubuntu:~$ docker run -d centos
+
+# 问题docker ps，发现 centos停止
+# 常见问题：docker是容器使用后台运行，必须要有一个前台进程，docker发现没有应用，就会自动停止，例nginx容器启动后发现自己没有提供服务，就会立刻停止
+```
+
+**查看日志**
+
+```shell
+docker logs
+Options:
+      --details        Show extra details provided to logs
+  -f, --follow         Follow log output
+      --since string   Show logs since timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
+  -n, --tail string    Number of lines to show from the end of the logs (default "all")
+  -t, --timestamps     Show timestamps
+      --until string   Show logs before a timestamp (e.g. 2013-01-02T13:23:37Z) or relative (e.g. 42m for 42 minutes)
+
+docker logs -f -t --tail 容器，没有日志
+#自己编写一个shell脚本
+ubuntu@VM-16-8-ubuntu:~$ docker run -d centos /bin/sh -c "while true;do echo kuangsheng;sleep 1;done"
+138688a0ccb0470f3ea03143e24a6bca6e89573d8d66f2fd982a666dce24e7f8
+ubuntu@VM-16-8-ubuntu:~$ docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS        PORTS     NAMES
+138688a0ccb0   centos    "/bin/sh -c 'while t…"   2 seconds ago   Up 1 second             recursing_blackburn
+#显示日志
+-tf #显示日志
+--tail number #显示日志条数 
+ubuntu@VM-16-8-ubuntu:~$ docker logs -tf --tail 10  138688a0ccb0
+```
+
+**查看容器中的进程信息** 
+
+```shell
+#命令 docker top 容器id
+ubuntu@VM-16-8-ubuntu:~$ docker top 138688a0ccb0
+UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD
+root                645905              645885              0                   21:53               ?                   00:00:00            /bin/sh -c while true;do echo kuangsheng;sleep 1;done
+root                647803              645905              0                   22:00               ?                   00:00:00            /usr/bin/coreutils --coreutils-prog-shebang=sleep /usr/bin/sleep 1
+```
+
+**查看镜像的元数据**
+
+```shell
+# 命令
+docker inspect 容器id
+ubuntu@VM-16-8-ubuntu:~$ docker inspect 138688a0ccb0
+[
+    {
+        "Id": "138688a0ccb0470f3ea03143e24a6bca6e89573d8d66f2fd982a666dce24e7f8",
+        "Created": "2022-03-07T13:53:46.307089567Z",
+        "Path": "/bin/sh",
+        "Args": [
+            "-c",
+            "while true;do echo kuangsheng;sleep 1;done"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 645905,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2022-03-07T13:53:46.686073644Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:5d0da3dc976460b72c77d94c8a1ad043720b0416bfc16c52c45d4847e53fadb6",
+        "ResolvConfPath": "/var/lib/docker/containers/138688a0ccb0470f3ea03143e24a6bca6e89573d8d66f2fd982a666dce24e7f8/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/138688a0ccb0470f3ea03143e24a6bca6e89573d8d66f2fd982a666dce24e7f8/hostname",
+        "HostsPath": "/var/lib/docker/containers/138688a0ccb0470f3ea03143e24a6bca6e89573d8d66f2fd982a666dce24e7f8/hosts",
+        "LogPath": "/var/lib/docker/containers/138688a0ccb0470f3ea03143e24a6bca6e89573d8d66f2fd982a666dce24e7f8/138688a0ccb0470f3ea03143e24a6bca6e89573d8d66f2fd982a666dce24e7f8-json.log",
+        "Name": "/recursing_blackburn",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "host",
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "KernelMemory": 0,
+            "KernelMemoryTCP": 0,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": false,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/asound",
+                "/proc/acpi",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/dca71537ec0efcc468a03f3e3b959c7a64d77123b63d6d74c94e19636863c9b1-init/diff:/var/lib/docker/overlay2/c23ad7d1bd6160b3010dd897fc946b1e8838e8029f7b56b2210f93ace06e3b73/diff",
+                "MergedDir": "/var/lib/docker/overlay2/dca71537ec0efcc468a03f3e3b959c7a64d77123b63d6d74c94e19636863c9b1/merged",
+                "UpperDir": "/var/lib/docker/overlay2/dca71537ec0efcc468a03f3e3b959c7a64d77123b63d6d74c94e19636863c9b1/diff",
+                "WorkDir": "/var/lib/docker/overlay2/dca71537ec0efcc468a03f3e3b959c7a64d77123b63d6d74c94e19636863c9b1/work"
+            },
+            "Name": "overlay2"
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "138688a0ccb0",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            ],
+            "Cmd": [
+                "/bin/sh",
+                "-c",
+                "while true;do echo kuangsheng;sleep 1;done"
+            ],
+            "Image": "centos",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": {
+                "org.label-schema.build-date": "20210915",
+                "org.label-schema.license": "GPLv2",
+                "org.label-schema.name": "CentOS Base Image",
+                "org.label-schema.schema-version": "1.0",
+                "org.label-schema.vendor": "CentOS"
+            }
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "be796ec0a125ae2b2443812b0fca6e15239f612dbfcaa31937bbae0aaefcee97",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {},
+            "SandboxKey": "/var/run/docker/netns/be796ec0a125",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "bbae773252890099a9da8c2356730a39fa44ba40bd22aa4609353b0af6b2095b",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:02",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "cf4488d3f41f081cdc50a063bf7069bac110edae6555ee6d98a2e69488bdc66f",
+                    "EndpointID": "bbae773252890099a9da8c2356730a39fa44ba40bd22aa4609353b0af6b2095b",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:02",
+                    "DriverOpts": null
+                }
+            }
+        }
+    }
+]
+```
+
+**进入当前正在运行的容器**
+
+```shell
+#我们的容器使用后台方式运行的，需要进入容器，修改配置
+# 命令
+docker exec -it 容器id bashshell
+# 测试
+ubuntu@VM-16-8-ubuntu:~$ docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS     NAMES
+138688a0ccb0   centos    "/bin/sh -c 'while t…"   20 minutes ago   Up 20 minutes             recursing_blackburn
+ubuntu@VM-16-8-ubuntu:~$ docker exec -it 138688a0ccb0 bashshell
+OCI runtime exec failed: exec failed: container_linux.go:380: starting container process caused: exec: "bashshell": executable file not found in $PATH: unknown
+ubuntu@VM-16-8-ubuntu:~$ docker exec -it 138688a0ccb0 /bin/bash
+[root@138688a0ccb0 /]# ls
+bin  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+[root@138688a0ccb0 /]# ps -ef
+UID          PID    PPID  C STIME TTY          TIME CMD
+root           1       0  0 13:53 ?        00:00:00 /bin/sh -c while true;do echo kuangsheng;sleep 1;done
+root        1276       0  0 14:14 pts/0    00:00:00 /bin/bash
+root        1306       1  0 14:15 ?        00:00:00 /usr/bin/coreutils --coreutils-prog-shebang=sleep /usr/bin/sleep 1
+root        1307    1276  0 14:15 pts/0    00:00:00 ps -ef
+
+# 方式二
+docker attach 容器id
+# 测试
+[root@138688a0ccb0 /]# docker attach 138688a0ccb0
+正在执行当前代码...
+
+#docker exec # 进入容器后开启一个新的终端，可以在里面操作(常用)
+#docker attach # 进入容器正在执行的终端，不会启动新的进程
+```
+
+**从容器内拷贝文件到主机**
+
+```shell
+docker cp 容器id：容器内路径 目的主机路径
+#查看当前主机目录下
+ubuntu@VM-16-8-ubuntu:/home$ ls
+chy.java  lighthouse  ubuntu
+ubuntu@VM-16-8-ubuntu:/home$ docker ps
+CONTAINER ID   IMAGE     COMMAND       CREATED         STATUS         PORTS     NAMES
+1bb6ee136d05   centos    "/bin/bash"   5 minutes ago   Up 5 minutes             cranky_meitner
+#进入docker主机内部
+ubuntu@VM-16-8-ubuntu:/home$ docker attach 1bb6ee136d05 
+[root@1bb6ee136d05 home]# touch test.java
+[root@1bb6ee136d05 home]# ls
+test.java
+[root@1bb6ee136d05 home]# exit
+exit
+buntu@VM-16-8-ubuntu:/home$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND       CREATED         STATUS                       PORTS     NAMES
+1bb6ee136d05   centos    "/bin/bash"   7 minutes ago   Exited (0) 12 seconds ago              cranky_meitner
+b6f4db898e4e   centos    "/bin/bash"   8 minutes ago   Exited (127) 7 minutes ago             strange_easley
+#将文件拷贝至主机上 
+ubuntu@VM-16-8-ubuntu:/home$ sudo docker cp 1bb6ee136d05:/home/test.java /home
+ubuntu@VM-16-8-ubuntu:/home$ ls
+chy.java  lighthouse  test.java  ubuntu
+# 拷贝只是一个手动过程，蔚来使用-V卷的技术，可以实现
+```
+
+## 小结
+
+![v2-820aee2a33654099d87cdd2b7a1ce741_r.jpg](https://s2.loli.net/2022/03/07/PCFwS6o1AsJVzme.jpg)
+
+[Docker 命令大全_w3cschool](https://www.w3cschool.cn/docker/docker-command-manual.html)
