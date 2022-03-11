@@ -945,3 +945,122 @@ centos       centos7   8652b9f0cb4c   9 months ago     204MB
 通过这个例子可以回顾下上面的分层思想，newtomcat是我们在之前容器层做了修改后生成的镜像，这个镜像和虚拟机的镜像快照差不多
 
 关于docker的镜像就说到这里，到现在docker算是简单的入了个门，后面会继续学习docker相关的内容，大家一起加油！
+
+# 容器数据卷
+
+## 什么是容器数据卷
+
+**Docker 理念回顾**
+
+将应用和环境打包成一个镜像
+
+如果数据都在容器中，那么容器删除，数据就会丢失！需求：数据可以持久化
+
+容器中间可以有一个数据共享的技术，Docker容器产生的数据可以同步到本地，这就是容器技术，目录的挂载 ，将容器的目录挂载到linux上
+
+**总结一句话：容器的持久化和同步操作！容器间也是可以数据共享的**
+
+## 使用数据卷
+
+> 方式一：直接使用命令挂载 -v
+
+```shell
+docker run -it -v 主机目录:容器目录
+# 测试
+ubuntu@VM-16-8-ubuntu:/home$ docker run it -v /home/ceshi/:/home centos /bin/bash
+# 容器启动之后通过docker inspect 容器id
+```
+
+<img src="https://s2.loli.net/2022/03/11/PdC9j2OYDqtTVHe.jpg" alt="屏幕截图 2022-03-11 154258.jpg" style="zoom:67%;" />
+
+## 实战：安装MySQL
+
+思考:MySQL的数据持久化问题
+
+```shell
+#获取镜像
+ubuntu@VM-16-8-ubuntu:~$ docker pull mysql:5.7
+#运行容器，需要做数据卷挂载 安装mysq，需要配置密码
+# 官方配置密码$ docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
+
+# 启动
+ubuntu@VM-16-8-ubuntu:~$ docker run -d -p 3310:3306 -v /home/mysql/conf:/etc/mysql/conf.d -v /home/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123456 --name mysql01 mysql:5.7
+#启动成功之后，连接测试一下
+#容器删除后，挂载到本地的数据依然不会删除，实现容器数据持久化
+```
+
+## 具名挂载和匿名挂载
+
+```shell
+-v 容器内路径 #匿名挂载
+docker run -d -P --name nginx01 -v etc/nginx
+#查看所有volume的情况
+ubuntu@VM-16-8-ubuntu:~$ docker volume ls
+DRIVER    VOLUME NAME
+local     93f0c8fac224b2c6bc686e910858019a0ad6380c9e070826b11b248c6cb1a613
+# 这里发现的这种都是匿名挂载，只有容器内部路径没有容器外的
+-v 卷名：容器内路径 #具名挂载
+ubuntu@VM-16-8-ubuntu:/home$  docker run -d -P --name nginx02 -v juming-nginx:/etc/nginx nginx
+682c3db14b301dd1c5b8a16073b07f5af27238ab7d24de2719efc015c4d54a66
+ubuntu@VM-16-8-ubuntu:/home$ docker volume ls
+DRIVER    VOLUME NAME
+local     93f0c8fac224b2c6bc686e910858019a0ad6380c9e070826b11b248c6cb1a613
+local     juming-nginx
+#查看此卷
+ubuntu@VM-16-8-ubuntu:/home$ docker volume inspect juming-nginx
+[
+    {
+        "CreatedAt": "2022-03-11T22:04:26+08:00",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/juming-nginx/_data",
+        "Name": "juming-nginx",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+
+所有docker内容的卷，没有指定目录的情况下都是在：/var/lib/docker/volumes/XXX
+-v /宿主内路径:容器内路径 #指定路径挂载
+```
+
+我们通过具名挂载的方式可以很方便的找到我们的卷，大多数情况在使用的'具名挂载'
+
+拓展：
+
+```shell
+# 通过 -v 容器内路径：ro rw 改变读写权限
+ro readonly #只读，这个路径只能通过宿主机来操作，容器内无法操作
+rw readwrite #可读可写
+# 一旦设定了这个,容器辉挂载出来的内容就有限定了
+ubuntu@VM-16-8-ubuntu:/home$  docker run -d -P --name nginx02 -v juming-nginx:/etc/nginx:ro nginx
+ubuntu@VM-16-8-ubuntu:/home$  docker run -d -P --name nginx02 -v juming-nginx:/etc/nginx:rw nginx
+```
+
+## 初识DockerFile
+
+DockerFile就是用来构建docker镜像的构建文件
+
+通过这个脚本可以生成镜像，镜像是一层一层的，脚本一个个的命令，每个命令都是一层
+
+## 数据卷容器
+
+多个mysql同步数据
+
+![查看源图像](https://tse1-mm.cn.bing.net/th/id/R-C.76a267ed0f07384e607e0e9ec483ec37?rik=RJ32lIP7Bsl2sw&riu=http%3a%2f%2fimage1.bubuko.com%2finfo%2f202101%2f20210127224242418539.png&ehk=NHcC84vpcez%2fhPQ3yXfQDG%2fzxwT8txJiWEVWSWS%2bP8k%3d&risl=&pid=ImgRaw&r=0)
+
+
+
+
+
+# DockerFile
+
+# Docker网络
+
+# 企业实战
+
+## DockerCompose
+
+## DockerSwam
+
+## CI/CD Jenkins
