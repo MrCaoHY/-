@@ -1055,6 +1055,158 @@ DockerFile就是用来构建docker镜像的构建文件
 
 # DockerFile
 
+dockerfile是用来构建docker镜像的文件，命令参数脚本
+
+构建步骤：
+
+1. 编写一个dockerfile文件
+2. docker builder构建成为一个镜像
+3. docker run运行镜像
+4. docker push发布镜像（dockerhub、阿里云镜像仓库）
+5. 官方做法
+
+```shell
+FROM scratch
+ADD centos-7-x86_64-docker.tar.xz /
+
+LABEL \
+    org.label-schema.schema-version="1.0" \
+    org.label-schema.name="CentOS Base Image" \
+    org.label-schema.vendor="CentOS" \
+    org.label-schema.license="GPLv2" \
+    org.label-schema.build-date="20201113" \
+    org.opencontainers.image.title="CentOS Base Image" \
+    org.opencontainers.image.vendor="CentOS" \
+    org.opencontainers.image.licenses="GPL-2.0-only" \
+    org.opencontainers.image.created="2020-11-13 00:00:00+00:00"
+
+CMD ["/bin/bash"]
+```
+
+很多官方镜像都是基础包，很多功能都没有，我们通常会自己搭建自己的镜像！
+
+
+
+## DockerFile的构建过程
+
+基础知识：
+
+1. 每个保留关键字（指令）都必须是大写字母
+2. 执行从上至下顺序执行
+3. #表示注释
+4. 每个指令都会创建提交一个新的镜像层，并提交
+
+<img src="https://img-blog.csdnimg.cn/20200826113041394.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4MjYyMjY2,size_16,color_FFFFFF,t_70" alt="查看源图像" style="zoom: 50%;" />
+
+docker是面向开发的，我们以后要发布项目，做镜像，就需要编写dockerfile文件
+
+DockerFile:构建文件，定义了一切的步骤，源代码
+
+Dockeriamges:通过DockerFile构建生成的镜像，最终发布和运行的产品
+
+Docker容器：容器就是镜像运行起来提供服务的
+
+## DockerFile的指令
+
+```shell
+RUN #基础镜像，一般从这里开始构建
+MAINTAINER #镜像是谁写的，姓名+邮箱
+RUN #镜像构建的时候需要的命令
+ADD #步骤：tomcat镜像，这个tomcat压缩包！添加内容
+WORKIR #镜像的工作目录
+VOLUME #挂载的目录
+EXPOST #保留端口配置
+CMD #指定这个容器启动时要运行的命令，只有最后一个会生效，可被替代
+ENTRYPOINT #指定这个容器启动时要运行的命令，可追加命令
+ONBUILD #当构建一个被继承DockerFile这个时候就会运行，触发指令
+COPY #类似ADD，将文件拷贝到镜像中
+ENV #构建的时候设置环境变量
+```
+
+
+
+<img src="https://tse1-mm.cn.bing.net/th/id/R-C.7e554c8e9afda05e73075785c958c3b1?rik=pVLDhGgoiug4pQ&riu=http%3a%2f%2fstatic.gitlib.com%2fblog%2f2017%2f10%2f27%2fdocker2.jpg&ehk=rX%2fmx8o28le1zNp8NyBbI9liiVAlptu%2btk4SJQp84kw%3d&risl=&pid=ImgRaw&r=0&sres=1&sresct=1" alt="查看源图像" style="zoom: 50%;" />
+
+## 实战测试
+
+ Docker Hub中99%的镜像都是从这个基础镜像过来的FORM scratch，然后配置需要的软件和配置来进行构建                       
+
+> 创建一个自己的centos
+
+ ```shell
+ # 1.编写dockerfile文件
+ root@VM-16-8-ubuntu:/home/dockerfile# cat mydocker-centos 
+ FROM centos
+ MAINTAINER chy<caohaiyang666888@outlook.com>
+ 
+ ENV MYPATH /usr/local
+ 
+ WORKDIR $MYPATH
+ 
+ RUN yum -y install vim
+ RUN yum -y install net-tools
+ 
+ EXPOSE 80
+ 
+ CMD echo $MYPATH
+ CMD echo "----end----"
+ CMD /bin/bash
+ # 2.通过这个文件构造镜像
+ # 命令 docker builder -f dockerfile文件路径 -t 镜像名:[tag]
+ root@VM-16-8-ubuntu:/home/dockerfile# docker build -f mydocker-centos -t mycentos:0.1 .
+ # 3.测试运行
+ ```
+
+ 查看本地镜像变更历史
+
+ ```shell
+root@VM-16-8-ubuntu:~# docker history 5d0da3dc9764
+IMAGE          CREATED        CREATED BY                                      SIZE      COMMENT
+5d0da3dc9764   5 months ago   /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B        
+<missing>      5 months ago   /bin/sh -c #(nop)  LABEL org.label-schema.sc…   0B        
+<missing>      5 months ago   /bin/sh -c #(nop) ADD file:805cb5e15fb6e0bb0…   231MB     
+root@VM-16-8-ubuntu:~# docker history 3218b38490ce
+IMAGE          CREATED        CREATED BY                                      SIZE      COMMENT
+3218b38490ce   2 months ago   /bin/sh -c #(nop)  CMD ["mysqld"]               0B        
+<missing>      2 months ago   /bin/sh -c #(nop)  EXPOSE 3306 33060            0B        
+<missing>      2 months ago   /bin/sh -c #(nop)  ENTRYPOINT ["docker-entry…   0B        
+<missing>      2 months ago   /bin/sh -c ln -s usr/local/bin/docker-entryp…   34B       
+<missing>      2 months ago   /bin/sh -c #(nop) COPY file:345a22fe55d3e678…   14.5kB    
+<missing>      2 months ago   /bin/sh -c #(nop) COPY dir:2e040acc386ebd23b…   1.12kB    
+<missing>      2 months ago   /bin/sh -c #(nop)  VOLUME [/var/lib/mysql]      0B        
+<missing>      2 months ago   /bin/sh -c {   echo mysql-community-server m…   380MB     
+<missing>      2 months ago   /bin/sh -c echo 'deb http://repo.mysql.com/a…   55B       
+<missing>      2 months ago   /bin/sh -c #(nop)  ENV MYSQL_VERSION=8.0.27-…   0B        
+<missing>      2 months ago   /bin/sh -c #(nop)  ENV MYSQL_MAJOR=8.0          0B        
+<missing>      2 months ago   /bin/sh -c set -ex;  key='A4A9406876FCBD3C45…   1.84kB    
+<missing>      2 months ago   /bin/sh -c apt-get update && apt-get install…   52.2MB    
+<missing>      2 months ago   /bin/sh -c mkdir /docker-entrypoint-initdb.d    0B        
+<missing>      2 months ago   /bin/sh -c set -eux;  savedAptMark="$(apt-ma…   4.17MB    
+<missing>      2 months ago   /bin/sh -c #(nop)  ENV GOSU_VERSION=1.12        0B        
+<missing>      2 months ago   /bin/sh -c apt-get update && apt-get install…   9.34MB    
+<missing>      2 months ago   /bin/sh -c groupadd -r mysql && useradd -r -…   329kB     
+<missing>      2 months ago   /bin/sh -c #(nop)  CMD ["bash"]                 0B        
+<missing>      2 months ago   /bin/sh -c #(nop) ADD file:bd5c9e0e0145fe33b…   69.3MB  
+ ```
+
+> CMD和ENTRYPOINT区别
+
+CMD #指定这个容器启动时要运行的命令，只有最后一个会生效，可被替代
+ENTRYPOINT #指定这个容器启动时要运行的命令，可追加命令
+
+## 实战：tomcat镜像
+
+1. 准备镜像文件tomcat压缩包，jdk的压缩包
+2. 编写dockerfile文件     
+
+## 发布镜像
+
+## Docker流程小结
+
+<img src="https://s2.loli.net/2022/03/13/snafo5wLNMJt6Wx.png" alt="3f0c8185c0b937e98f7a690779dc305e.png" style="zoom:50%;" />
+
+
+
 # Docker网络
 
 # 企业实战
