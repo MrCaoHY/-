@@ -85,8 +85,8 @@ pom文件配置内容
             <version>1.4.200</version>
             <scope>runtime</scope>
         </dependency>
-		```
-		
+```
+
 		**创建applicationContext.xml文件，内容如下：**  
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -114,7 +114,7 @@ pom文件配置内容
 
 自定义DataSource，这里使用注解来实现（使用dbcp连接池）
 
-```java
+​```java
 @Configuration
 @EnableTransactionManagement
 public class DataSourceDemo {
@@ -720,4 +720,102 @@ Barista-->>Waiter:通知制作完毕
 ```
 
 ![屏幕截图 2022-05-02 015455.jpg](https://s2.loli.net/2022/05/02/txKp3VUaOXFJBZh.jpg)
+
+## Mybatis的注解使用
+
+### mybatis的插件使用
+
+[Spring Boot 使用 Mybatis（自动生成插件） 访问数据库 | 未读代码 (wdbyte.com)](https://www.wdbyte.com/2019/03/springboot/springboot-11-data-mybatis/#_1-springboot-mybatis-介绍)
+
+mybatis官网
+
+[MyBatis (github.com)](https://github.com/mybatis)
+
+## 对MongoDB的支持
+
+### MongoDB是一款开源的文档型数据库
+
+### Docker启动MongoDB
+
+#### DockerHub指导
+
+[Mongo - Official Image | Docker Hub](https://hub.docker.com/_/mongo)
+
+#### 获取镜像
+
+* docker pull mongo
+
+#### Docker启动允许MongoDB镜像
+
+* docker run --name mongo -p 27017:27017 -v ~/docker-data/mongo:/data/db -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=admin -d mongo
+* 具名挂载即可：docker run --name mongo -p 27017:27017 -v mongo:/data/db -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=admin -d mongo
+
+查看所有挂载卷名：docker volume ps
+
+查看指定卷详细情况：docker volume inspect 卷名
+
+[MongoDB 教程 | 菜鸟教程 (runoob.com)](https://www.runoob.com/mongodb/mongodb-tutorial.html)
+
+#### MongoDB的使用
+
+* 进入镜像：docker exec -it b284bcfccce8 bash
+* 登录用户：mongo -u admin -p admin
+* 帮助 help
+
+##### 初始化MongoDB的库及权限
+
+###### 创建库
+
+​	use springbucks;
+
+###### 创建用户
+
+db.createUser({user:"springbucks",pwd:"springbucks",roles:[{role:"readWrite",db:"springbucks"}]})
+
+### Spring对MongoDB的支持
+
+* Spring Data MongoDB
+* MongoTemplate
+* Repository支持
+
+### Spring Data MongoDB的基本用法
+
+**注解**
+
+* @Document
+* @Id
+
+**MongoTemplate**
+
+* sava/remove
+* Criteria/ Query/ Update
+
+## Redis
+
+### Spring对Redis的支持
+
+* Spring Data Redis
+  * 支持的客户端 Jedis/Lettuce
+  * RedisTemplate
+  * Repository支持
+
+### Jedis客户端的简单使用
+
+* Jedis不是线程安全的
+* 通过JedisPool获得Jedis实例
+* 直接使用Jedis中的方法
+
+### 通过Docker启动redis
+
+docker run --name redis -d -p 6379:6379 redis
+
+### Redis的哨兵模式
+
+Redis Sentinel是Redis的一种高可用方案
+
+* 监控、通州、自动故障转移、服务发现
+
+JedisSentinelPool
+
+### Spring的缓存抽象
 
