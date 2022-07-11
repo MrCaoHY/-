@@ -81,7 +81,7 @@
 
 #### 简介
 
-Nginx是一款[轻量级](https://baike.baidu.com/item/轻量级/10002835)的[Web](https://baike.baidu.com/item/Web/150564) 服务器/[反向代理](https://baike.baidu.com/item/反向代理/7793488)服务器及[电子邮件](https://baike.baidu.com/item/电子邮件/111106)（IMAP/POP3）代理服务器
+Nginx是一款轻量级的Web服务器/反向代理服务器及电子邮件IMAP/POP3）代理服务器
 
 #### nginx特点
 
